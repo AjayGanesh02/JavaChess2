@@ -1,24 +1,50 @@
+package com.chess.engine.board;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.chess.engine.pieces.Piece;
+
 //Abstract class, splits into two subclasses: emptyTile and occupiedTile
+//Abstract class cannot be instantiated
 public abstract class Tile {
 	
 	//8x8 grid of tiles makes up the board
-	int tileCoord;
+	protected final int tileCoord;
+	
+	//Every possible empty tile that could possibly exist is created all at once through this, can use EMPTY_TILES.get(1-64)
+	private static final Map<Integer, EmptyTile> EMPTY_TILES = createAllPossibleEmptyTiles();
 	
 	//Constructor, tileCoord allows me to specify which of the 64 tiles it is
 	Tile(int tileCoord) {
 		this.tileCoord = tileCoord;
 	}
 	
+	private static Map<Integer, EmptyTile> createAllPossibleEmptyTiles() {
+		final Map<Integer, EmptyTile> emptyTileMap = new HashMap<>();
+		
+		for(int i = 0; i < 64;i++) {
+			emptyTileMap.put(i, new EmptyTile(i));
+		}
+		
+		return emptyTileMap;
+	}
+	
+	//Only way to create a tile, empty tiles are cached and occupied tiles are newly created
+	public static Tile createTile(final int tileCoord, final Piece piece) {
+		return piece != null ? new OccupiedTile(tileCoord, piece) : EMPTY_TILES.get(tileCoord);
+	}
+
 	//Returns if tile is occupied by a Piece or not
 	public abstract boolean isTileOccupied();
 	
 	//If tile is occupied, returns piece that is on it
 	public abstract Piece getPiece();
 	
-	//Subclass 
+	//Subclasses in same file as abstract
 	public static final class EmptyTile extends Tile {
 		
-		EmptyTile(int coord) {
+		EmptyTile(final int coord) {
 			super(coord);
 		}
 		
@@ -36,13 +62,12 @@ public abstract class Tile {
 		}
 	}
 	
-	//Subclass
 	public static final class OccupiedTile extends Tile {
 		
-		Piece pieceOnTile;
+		private final Piece pieceOnTile;
 		
 		//OccupiedTile constructor 
-		OccupiedTile(int coord, Piece pieceOnTile) {
+		OccupiedTile(final int coord, Piece pieceOnTile) {
 			super(coord);
 			this.pieceOnTile = pieceOnTile;
 		}
