@@ -1,5 +1,6 @@
 package com.chess.engine.board;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,11 +13,11 @@ public abstract class Tile {
 	//8x8 grid of tiles makes up the board
 	protected final int tileCoord;
 	
-	//Every possible empty tile that could possibly exist is created all at once through this, can use EMPTY_TILES.get(1-64)
-	private static final Map<Integer, EmptyTile> EMPTY_TILES = createAllPossibleEmptyTiles();
+	//Every possible empty tile that could possibly exist is created all at once through this, can use EMPTY_TILES_CACHE.get(1-64)
+	private static final Map<Integer, EmptyTile> EMPTY_TILES_CACHE = createAllPossibleEmptyTiles();
 	
 	//Constructor, tileCoord allows me to specify which of the 64 tiles it is
-	Tile(int tileCoord) {
+	private Tile(int tileCoord) {
 		this.tileCoord = tileCoord;
 	}
 	
@@ -27,12 +28,15 @@ public abstract class Tile {
 			emptyTileMap.put(i, new EmptyTile(i));
 		}
 		
-		return emptyTileMap;
+		return Collections.unmodifiableMap(emptyTileMap);
 	}
 	
 	//Only way to create a tile, empty tiles are cached and occupied tiles are newly created
 	public static Tile createTile(final int tileCoord, final Piece piece) {
-		return piece != null ? new OccupiedTile(tileCoord, piece) : EMPTY_TILES.get(tileCoord);
+		//? (conditional operator) acts like if statement
+		//if piece is null, returns the cached empty tile
+		//if piece is not null, returns the new OccupiedTile
+		return piece != null ? new OccupiedTile(tileCoord, piece) : EMPTY_TILES_CACHE.get(tileCoord);
 	}
 
 	//Returns if tile is occupied by a Piece or not
@@ -44,7 +48,7 @@ public abstract class Tile {
 	//Subclasses in same file as abstract
 	public static final class EmptyTile extends Tile {
 		
-		EmptyTile(final int coord) {
+		private EmptyTile(final int coord) {
 			super(coord);
 		}
 		
@@ -67,7 +71,7 @@ public abstract class Tile {
 		private final Piece pieceOnTile;
 		
 		//OccupiedTile constructor 
-		OccupiedTile(final int coord, Piece pieceOnTile) {
+		private OccupiedTile(final int coord, Piece pieceOnTile) {
 			super(coord);
 			this.pieceOnTile = pieceOnTile;
 		}
